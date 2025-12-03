@@ -1,4 +1,3 @@
-import mongoose from 'mongoose'
 import {personas} from '../models/persona.model.js'
 import { cursos } from '../models/curso.model.js'
 
