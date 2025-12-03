@@ -55,12 +55,6 @@ export const createPerson = async (req, res) =>{
     }
 }
 
-export const getPersonById = async (req, res) =>{
-    const {id} = req.params
-    res.send(id)
-    console.log("getPersonById")
-}
-
 export const getPersonByDNI = async (req, res) => {
     const {cedula} = req.params
     console.log(cedula)
