@@ -3,20 +3,19 @@ import {personas} from '../models/persona.model.js'
 import { cursos } from '../models/curso.model.js'
 
 export const getPersons = async (req, res) =>{
-    const {id} = req.query
-    if (id) {
-        console.log("getPersons:" + id)
-        const personById = await personas.find({_id:id})
-        res.json({
-            data: personById
+    const {id} = req.params
+    console.log("getPersons:" + id)
+    if (id && id.length != 24) {
+        res.status(400).json({
+            error: "ID invalido"
         })
-    } else {
-        console.log("getAllPersons")
-        const personById = await personas.find()
-        res.json({
-            data: personById
-        })
+        return
     }
+    const personById = await personas.find(id ? {_id:id} : {})
+    res.json({
+        data: personById
+    })
+
 }
 
 export const createPerson = async (req, res) =>{
