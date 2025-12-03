@@ -21,26 +21,37 @@ export const createPerson = async (req, res) =>{
 
     try {
         const {nombre, cedula, email, curso} = req.body
-        console.log(nombre, cedula, email, curso)
+        if (!nombre || !curso || !cedula) {
+            console.log("Faltan datos")
+            res.status(400).json({
+                error:"faltan datos"
+            })
+            return
+        }
         const getCurso = await cursos.findOne({codigo: curso})
         const cursoId = getCurso._id
+        console.log(nombre, cedula, email, curso, cursoId.toString())
+        if (!cursoId.toString()){
+            res.status(400).json({
+                error:"no se encuetra el curso"
+            })
+        }
 
         const persona = new personas({
-            _id: new mongoose.Types.ObjectId(),
             nombre, 
             cedula, 
             email, 
-            cursoId
+            curso:cursoId
         })
         await persona.save()
         res.json({
             data: {nombre, cedula, email, curso}
         })
     } catch (error) {
-        res.json({
-            error: "no se pudo crear la persona"
+        res.status(409).json({
+            error: error?.errmsg?.includes("E11000") ? "Ya existe la persona" : error.errmsg
         })
-        console.log(error)
+        console.log(error.errmsg)
     }
 }
 
