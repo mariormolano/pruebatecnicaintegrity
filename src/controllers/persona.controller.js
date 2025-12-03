@@ -58,8 +58,20 @@ export const createPerson = async (req, res) =>{
 export const getPersonByDNI = async (req, res) => {
     const {cedula} = req.params
     console.log(cedula)
-    const responseQuery = await personas.find({cedula}).populate('curso').exec()
-    console.log(responseQuery.curso)
+    const responseQuery = await personas.findOne({cedula}).populate('curso')
+    console.log(responseQuery)
+    res.json({
+        persona:{
+            nombre: responseQuery.nombre,
+            cedula: responseQuery.cedula,
+            email: responseQuery.email
+        },
+        curso:{
+            nombre: responseQuery.curso.nombre,
+            codigo: responseQuery.curso.codigo,
+            descripcion: responseQuery.curso.descripcion
+        }
+    })
 }
 
 export const updatePersonById = async (req, res) =>{
