@@ -121,5 +121,28 @@ export const updatePersonById = async (req, res) =>{
 }
 
 export const deletePersonById = async (req, res) =>{
-    
+    try {
+        const {id} = req.params
+        if (!id || id.length != 24) {
+            res.status(400).json({
+                error: "ID invalido"
+            })
+            return
+        }
+        const personaDelete = await personas.deleteOne({_id:id})
+        if (personaDelete.deletedCount > 0){
+            res.json({
+                data: "persona ID: "+ id + " borrada"
+            })
+        } else {
+            res.status(400).json({
+            error: "no se pudo borrar la persona"
+        })
+        }
+    } catch (error) {
+        res.status(400).json({
+            error: "no se pudo borrar la persona"
+        })
+        console.log(error)
+    }
 }
