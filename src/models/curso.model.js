@@ -7,7 +7,7 @@ const cursoSchema = new mongoose.Schema({
     },
     codigo: {
         type: String,
-        require: true,
+        required: true,
         unique: true
     },
     descripcion: {

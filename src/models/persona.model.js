@@ -1,14 +1,13 @@
 import mongoose from "mongoose";
-import {cursos} from './curso.model.js'
 
 const personaSchema = new mongoose.Schema({
     nombre: {
         type: String,
-        require: true
+        required: true
     },
     cedula: {
         type: String,
-        require: true,
+        required: true,
         unique: true
     },
     email: {
@@ -17,7 +16,7 @@ const personaSchema = new mongoose.Schema({
     curso: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'cursos',
-        require:true
+        required:true
     }
 })
 

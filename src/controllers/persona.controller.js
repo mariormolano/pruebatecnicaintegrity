@@ -1,68 +1,148 @@
-import mongoose from 'mongoose'
 import {personas} from '../models/persona.model.js'
 import { cursos } from '../models/curso.model.js'
 
 export const getPersons = async (req, res) =>{
-    const {id} = req.query
-    if (id) {
-        console.log("getPersons:" + id)
-        const personById = await personas.find({_id:id})
-        res.json({
-            data: personById
+    const {id} = req.params
+    console.log("getPersons:" + id)
+    if (id && id.length != 24) {
+        res.status(400).json({
+            error: "ID invalido"
         })
-    } else {
-        console.log("getAllPersons")
-        const personById = await personas.find()
-        res.json({
-            data: personById
-        })
+        return
     }
+    const personById = await personas.find(id ? {_id:id} : {})
+    res.json({
+        data: personById
+    })
+
 }
 
 export const createPerson = async (req, res) =>{
 
     try {
         const {nombre, cedula, email, curso} = req.body
-        console.log(nombre, cedula, email, curso)
+        if (!nombre || !curso || !cedula) {
+            console.log("Faltan datos")
+            res.status(400).json({
+                error:"faltan datos"
+            })
+            return
+        }
         const getCurso = await cursos.findOne({codigo: curso})
         const cursoId = getCurso._id
+        console.log(nombre, cedula, email, curso, cursoId.toString())
+        if (!cursoId.toString()){
+            res.status(400).json({
+                error:"no se encuetra el curso"
+            })
+        }
 
         const persona = new personas({
-            _id: new mongoose.Types.ObjectId(),
             nombre, 
             cedula, 
             email, 
-            cursoId
+            curso:cursoId
         })
         await persona.save()
         res.json({
             data: {nombre, cedula, email, curso}
         })
     } catch (error) {
-        res.json({
-            error: "no se pudo crear la persona"
+        res.status(409).json({
+            error: error?.errmsg?.includes("E11000") ? "Ya existe la persona" : error.errmsg
         })
-        console.log(error)
+        console.log(error.errmsg)
     }
-}
-
-export const getPersonById = async (req, res) =>{
-    const {id} = req.params
-    res.send(id)
-    console.log("getPersonById")
 }
 
 export const getPersonByDNI = async (req, res) => {
     const {cedula} = req.params
     console.log(cedula)
-    const responseQuery = await personas.find({cedula}).populate('curso').exec()
-    console.log(responseQuery.curso)
+    const responseQuery = await personas.findOne({cedula}).populate('curso')
+    console.log(responseQuery)
+    res.json({
+        persona:{
+            nombre: responseQuery.nombre,
+            cedula: responseQuery.cedula,
+            email: responseQuery.email
+        },
+        curso:{
+            nombre: responseQuery.curso.nombre,
+            codigo: responseQuery.curso.codigo,
+            descripcion: responseQuery.curso.descripcion
+        }
+    })
 }
 
 export const updatePersonById = async (req, res) =>{
+    try {
+        const {nombre, cedula, email, curso} = req.body
+        if (!nombre || !curso || !cedula) {
+            console.log("Faltan datos")
+            res.status(400).json({
+                error:"faltan datos"
+            })
+            return
+        }
+        const {id} = req.params
+        console.log("getPersons:" + id)
+        if (!id || id.length != 24) {
+            res.status(400).json({
+                error: "ID invalido"
+            })
+            return
+        }
+        const getCurso = await cursos.findOne({codigo: curso})
+        console.log(getCurso)
+        const cursoId = getCurso._id
+        console.log(nombre, cedula, email, curso, cursoId.toString())
+        if (!cursoId.toString()){
+            res.status(400).json({
+                error:"no se encuetra el curso"
+            })
+        }
 
+        const persona = await personas.updateOne({_id:id}, {$set: {
+            nombre, 
+            cedula, 
+            email, 
+            curso:cursoId
+        }})
+        res.json({
+            data: {nombre, cedula, email, curso}
+        })
+        console.log(persona)
+    } catch (error) {
+        res.status(400).json({
+            error: "no se pudo actualizar la persona"
+        })
+        console.log(error)
+    }
 }
 
 export const deletePersonById = async (req, res) =>{
-    
+    try {
+        const {id} = req.params
+        if (!id || id.length != 24) {
+            res.status(400).json({
+                error: "ID invalido"
+            })
+            return
+        }
+        const personaDelete = await personas.deleteOne({_id:id})
+        if (personaDelete.deletedCount > 0){
+            res.json({
+                data: "persona ID: "+ id + " borrada"
+            })
+        } else {
+            res.status(400).json({
+            error: "no se pudo borrar la persona"
+        })
+        }
+    } catch (error) {
+        res.status(400).json({
+            error: "no se pudo borrar la persona"
+        })
+        console.log(error)
+    }
 }
